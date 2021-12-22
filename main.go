@@ -2,6 +2,7 @@ package ripple_go_sdk
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/pkg/errors"
 	"net/http"
@@ -70,13 +71,46 @@ func (c client) CreateQuoteCollection(data resources.CreateQuoteCollection) (*re
 }
 
 func (c client) AcceptQuote(data resources.AcceptQuote) (*resources.Payment, error) {
-	panic("implement me")
+	response, err := c.Do.Post(data, acceptQuotePath)
+	if err != nil {
+		return nil, errors.Wrap(err, "error sending accept quote request")
+	}
+
+	var body resources.Payment
+	err = json.Unmarshal(response, &body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling response")
+	}
+	return &body, nil
 }
 
 func (c client) SettlePayment(paymentID string) (*resources.Payment, error) {
-	panic("implement me")
+	reqBody := resources.SettlePayment{}
+	reqPath := fmt.Sprintf("%s%s/settle", settlePaymentPath, paymentID)
+	response, err := c.Do.Post(reqBody, reqPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "error sending settle payment request")
+	}
+
+	var body resources.Payment
+	err = json.Unmarshal(response, &body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling response")
+	}
+	return &body, nil
 }
 
 func (c client) GetPaymentByID(paymentID string) (*resources.Payment, error) {
-	panic("implement me")
+	reqPath := fmt.Sprintf("%s%s", getPaymentByIDPath, paymentID)
+	response, err := c.Do.Get(reqPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "error sending get payment by id request")
+	}
+
+	var body resources.Payment
+	err = json.Unmarshal(response, &body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling response")
+	}
+	return &body, nil
 }
