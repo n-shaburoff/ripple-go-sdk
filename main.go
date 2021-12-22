@@ -55,7 +55,7 @@ func NewClient(url *url.URL, cli *http.Client) (Client, error) {
 	}, nil
 }
 
-func (c client) CreateQuoteCollection(data resources.CreateQuoteCollection) (*resources.CreateQuoteCollectionResponse, error) {
+func (c *client) CreateQuoteCollection(data resources.CreateQuoteCollection) (*resources.CreateQuoteCollectionResponse, error) {
 	response, err := c.Do.Post(data, createQuoteCollectionPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "error sending create quote collection request")
@@ -70,7 +70,7 @@ func (c client) CreateQuoteCollection(data resources.CreateQuoteCollection) (*re
 	return &body, nil
 }
 
-func (c client) AcceptQuote(data resources.AcceptQuote) (*resources.Payment, error) {
+func (c *client) AcceptQuote(data resources.AcceptQuote) (*resources.Payment, error) {
 	response, err := c.Do.Post(data, acceptQuotePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "error sending accept quote request")
@@ -84,7 +84,7 @@ func (c client) AcceptQuote(data resources.AcceptQuote) (*resources.Payment, err
 	return &body, nil
 }
 
-func (c client) SettlePayment(paymentID string) (*resources.Payment, error) {
+func (c *client) SettlePayment(paymentID string) (*resources.Payment, error) {
 	reqBody := resources.SettlePayment{}
 	reqPath := fmt.Sprintf("%s%s/settle", settlePaymentPath, paymentID)
 	response, err := c.Do.Post(reqBody, reqPath)
@@ -100,7 +100,7 @@ func (c client) SettlePayment(paymentID string) (*resources.Payment, error) {
 	return &body, nil
 }
 
-func (c client) GetPaymentByID(paymentID string) (*resources.Payment, error) {
+func (c *client) GetPaymentByID(paymentID string) (*resources.Payment, error) {
 	reqPath := fmt.Sprintf("%s%s", getPaymentByIDPath, paymentID)
 	response, err := c.Do.Get(reqPath)
 	if err != nil {
