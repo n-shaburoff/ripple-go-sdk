@@ -1,6 +1,7 @@
 package ripple_go_sdk
 
 import (
+	"encoding/json"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/pkg/errors"
 	"net/http"
@@ -54,7 +55,18 @@ func NewClient(url *url.URL, cli *http.Client) (Client, error) {
 }
 
 func (c client) CreateQuoteCollection(data resources.CreateQuoteCollection) (*resources.CreateQuoteCollectionResponse, error) {
-	panic("implement me")
+	response, err := c.Do.Post(data, createQuoteCollectionPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "error sending create quote collection request")
+	}
+
+	var body resources.CreateQuoteCollectionResponse
+
+	err = json.Unmarshal(response, &body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling response")
+	}
+	return &body, nil
 }
 
 func (c client) AcceptQuote(data resources.AcceptQuote) (*resources.Payment, error) {
