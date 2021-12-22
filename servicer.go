@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 const (
@@ -20,12 +21,15 @@ type Service interface {
 	Resolve(path string) string
 	Get(path string) ([]byte, error)
 	Post(data interface{}, path string) ([]byte, error)
+
+	GetTokenTime() time.Time
 }
 
 type servicer struct {
-	http        *http.Client
-	url         *url.URL
-	accessToken string
+	http         *http.Client
+	url          *url.URL
+	accessToken  string
+	tokenExpires time.Time
 }
 
 func (c *servicer) Authorize(data resources.Authorization) error {
@@ -50,6 +54,9 @@ func (c *servicer) Authorize(data resources.Authorization) error {
 
 	// setting JWT
 	c.accessToken = body.AccessToken
+
+	// setting time if getting token
+	c.tokenExpires = time.Now()
 
 	return nil
 }
@@ -118,4 +125,8 @@ func (c *servicer) Get(path string) ([]byte, error) {
 	}
 
 	return ioutil.ReadAll(r.Body)
+}
+
+func (c *servicer) GetTokenTime() time.Time {
+	return c.tokenExpires
 }

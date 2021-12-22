@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 )
 
 var clientID = os.Getenv("CLIENT_ID")
@@ -56,6 +57,11 @@ func NewClient(url *url.URL, cli *http.Client) (Client, error) {
 }
 
 func (c *client) CreateQuoteCollection(data resources.CreateQuoteCollection) (*resources.CreateQuoteCollectionResponse, error) {
+	err := c.checkAccessToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "old access token")
+	}
+
 	response, err := c.Do.Post(data, createQuoteCollectionPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "error sending create quote collection request")
@@ -71,6 +77,11 @@ func (c *client) CreateQuoteCollection(data resources.CreateQuoteCollection) (*r
 }
 
 func (c *client) AcceptQuote(data resources.AcceptQuote) (*resources.Payment, error) {
+	err := c.checkAccessToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "old access token")
+	}
+
 	response, err := c.Do.Post(data, acceptQuotePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "error sending accept quote request")
@@ -85,6 +96,11 @@ func (c *client) AcceptQuote(data resources.AcceptQuote) (*resources.Payment, er
 }
 
 func (c *client) SettlePayment(paymentID string) (*resources.Payment, error) {
+	err := c.checkAccessToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "old access token")
+	}
+
 	reqBody := resources.SettlePayment{}
 	reqPath := fmt.Sprintf("%s%s/settle", settlePaymentPath, paymentID)
 	response, err := c.Do.Post(reqBody, reqPath)
@@ -101,6 +117,11 @@ func (c *client) SettlePayment(paymentID string) (*resources.Payment, error) {
 }
 
 func (c *client) GetPaymentByID(paymentID string) (*resources.Payment, error) {
+	err := c.checkAccessToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "old access token")
+	}
+
 	reqPath := fmt.Sprintf("%s%s", getPaymentByIDPath, paymentID)
 	response, err := c.Do.Get(reqPath)
 	if err != nil {
@@ -113,4 +134,26 @@ func (c *client) GetPaymentByID(paymentID string) (*resources.Payment, error) {
 		return nil, errors.Wrap(err, "error unmarshalling response")
 	}
 	return &body, nil
+}
+
+func (c *client) checkAccessToken() error {
+	nowTime := time.Now()
+	difference := nowTime.Sub(c.Do.GetTokenTime()).Seconds()
+
+	if difference > 3600 {
+		err := c.Do.Authorize(authReqBody())
+		if err != nil {
+			return errors.Wrap(err, "failed to refresh access token")
+		}
+	}
+	return nil
+}
+
+func authReqBody() resources.Authorization {
+	return resources.Authorization{
+		GrantType:    "client_credentials",
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		Audience:     audience,
+	}
 }
