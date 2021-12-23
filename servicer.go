@@ -13,11 +13,6 @@ import (
 	"time"
 )
 
-const (
-	AuthUrl = "https://auth.eu.prod.ripplenet.net"
-	BaseUrl = "https://rfc.test.ripplexcurrent.com"
-)
-
 type Service interface {
 	Authorize(data resources.Authorization) error
 	Resolve(path string) string
@@ -50,7 +45,7 @@ func NewServicer() *servicer {
 func (c *servicer) Authorize(data resources.Authorization) error {
 	auth, err := url.Parse(c.authUrl)
 	if err != nil {
-		return errors.Wrap(err,"failed to parse auth url")
+		return errors.Wrap(err, "failed to parse auth url")
 	}
 
 	c.url = auth
