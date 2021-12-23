@@ -31,9 +31,7 @@ type client struct {
 	Do Service
 }
 
-func NewClient() (Client, error) {
-	svc := NewServicer()
-
+func NewClient(svc *servicer) (Client, error) {
 	err := svc.Authorize(authReqBody())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to authorize")

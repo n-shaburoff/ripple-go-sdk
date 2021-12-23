@@ -6,7 +6,6 @@ import (
 	"github.com/n-shaburoff/ripple-go-sdk/config"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/pkg/errors"
-	"gitlab.com/distributed_lab/kit/kv"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -32,9 +31,7 @@ type servicer struct {
 	baseUrl           string
 }
 
-func NewServicer() *servicer {
-	cfg := config.NewUrler(kv.MustFromEnv())
-
+func NewServicer(cfg config.URL) *servicer {
 	return &servicer{
 		authUrl: cfg.URL().AuthUrl,
 		baseUrl: cfg.URL().BaseUrl,
