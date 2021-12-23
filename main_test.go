@@ -4,22 +4,31 @@ import (
 	"fmt"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/stretchr/testify/assert"
-	"net/http"
 	"testing"
 )
 
 func TestServicer_Authorize(t *testing.T) {
-	svc := servicer{
-		http: http.DefaultClient,
-	}
+	svc := NewServicer()
 
-	err := svc.Authorize(resources.Authorization{
-		GrantType:    "client_credentials",
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Audience:     audience,
-	})
+	err := svc.Authorize(authReqBody())
 
 	fmt.Println(svc.accessToken)
+	assert.NoError(t, err)
+}
+
+func TestClient_CreateQuoteCollection(t *testing.T) {
+	ripple, err := NewClient()
+	assert.NoError(t, err)
+
+	_, err = ripple.CreateQuoteCollection(resources.CreateQuoteCollection{
+		SendingAddress:             "test.irl.rfc",
+		ReceivingAddress:           "test.xrapid.rfc",
+		Amount:                     25,
+		QuoteType:                  "SENDER_AMOUNT",
+		Currency:                   "USD",
+		PaymentMethod:              "spei",
+		DigitalAssetOrigination:    false,
+		EnableQuotePerPayoutMethod: false,
+	})
 	assert.NoError(t, err)
 }

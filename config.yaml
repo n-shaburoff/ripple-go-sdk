@@ -1,0 +1,3 @@
+settings:
+  auth_url: "https://auth.eu.prod.ripplenet.net"
+  base_url: "https://rfc.test.ripplexcurrent.com"

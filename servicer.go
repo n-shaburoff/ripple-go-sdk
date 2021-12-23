@@ -3,8 +3,10 @@ package ripple_go_sdk
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/n-shaburoff/ripple-go-sdk/config"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/pkg/errors"
+	"gitlab.com/distributed_lab/kit/kv"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -22,23 +24,36 @@ type Service interface {
 	Get(path string) ([]byte, error)
 	Post(data interface{}, path string) ([]byte, error)
 
-	GetTokenTime() time.Time
+	CheckAccessToken() error
 }
 
 type servicer struct {
-	http         *http.Client
-	url          *url.URL
-	accessToken  string
-	tokenExpires time.Time
+	http              *http.Client
+	url               *url.URL
+	accessToken       string
+	tokenExpires      time.Time
+	tokenTimeDuration float64
+	authUrl           string
+	baseUrl           string
+}
+
+func NewServicer() *servicer {
+	cfg := config.NewUrler(kv.MustFromEnv())
+
+	return &servicer{
+		authUrl: cfg.URL().AuthUrl,
+		baseUrl: cfg.URL().BaseUrl,
+		http:    http.DefaultClient,
+	}
 }
 
 func (c *servicer) Authorize(data resources.Authorization) error {
-	addr, err := url.Parse(AuthUrl)
+	auth, err := url.Parse(c.authUrl)
 	if err != nil {
-		return errors.Wrap(err, "failed to parse url")
+		return errors.Wrap(err,"failed to parse auth url")
 	}
 
-	c.url = addr
+	c.url = auth
 
 	response, err := c.Post(data, authorizationPath)
 	if err != nil {
@@ -52,11 +67,22 @@ func (c *servicer) Authorize(data resources.Authorization) error {
 		return errors.Wrap(err, "error unmarshalling response")
 	}
 
+	base, err := url.Parse(c.baseUrl)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse base url")
+	}
+
 	// setting JWT
 	c.accessToken = body.AccessToken
 
 	// setting time if getting token
 	c.tokenExpires = time.Now()
+
+	// setting token time duration
+	c.tokenTimeDuration = float64(body.ExpiresIn)
+
+	// setting base url
+	c.url = base
 
 	return nil
 }
@@ -127,6 +153,24 @@ func (c *servicer) Get(path string) ([]byte, error) {
 	return ioutil.ReadAll(r.Body)
 }
 
-func (c *servicer) GetTokenTime() time.Time {
-	return c.tokenExpires
+func (c *servicer) CheckAccessToken() error {
+	nowTime := time.Now()
+	difference := nowTime.Sub(c.tokenExpires).Seconds()
+
+	if difference > c.tokenTimeDuration {
+		err := c.Authorize(authReqBody())
+		if err != nil {
+			return errors.Wrap(err, "failed to refresh access token")
+		}
+	}
+	return nil
+}
+
+func authReqBody() resources.Authorization {
+	return resources.Authorization{
+		GrantType:    "client_credentials",
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		Audience:     audience,
+	}
 }
