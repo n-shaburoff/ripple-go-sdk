@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+var grantType = os.Getenv("GRANT_TYPE")
 var clientID = os.Getenv("CLIENT_ID")
 var clientSecret = os.Getenv("CLIENT_SECRET")
 var audience = os.Getenv("AUDIENCE")

@@ -26,7 +26,7 @@ type servicer struct {
 	url               *url.URL
 	accessToken       string
 	tokenExpires      time.Time
-	tokenTimeDuration float64
+	tokenTimeDuration time.Duration
 	authUrl           string
 	baseUrl           string
 }
@@ -71,7 +71,7 @@ func (c *servicer) Authorize(data resources.Authorization) error {
 	c.tokenExpires = time.Now()
 
 	// setting token time duration
-	c.tokenTimeDuration = float64(body.ExpiresIn)
+	c.tokenTimeDuration = time.Duration(body.ExpiresIn)
 
 	// setting base url
 	c.url = base
@@ -147,7 +147,7 @@ func (c *servicer) Get(path string) ([]byte, error) {
 
 func (c *servicer) CheckAccessToken() error {
 	nowTime := time.Now()
-	difference := nowTime.Sub(c.tokenExpires).Seconds()
+	difference := nowTime.Sub(c.tokenExpires)
 
 	if difference > c.tokenTimeDuration {
 		err := c.Authorize(authReqBody())
@@ -160,7 +160,7 @@ func (c *servicer) CheckAccessToken() error {
 
 func authReqBody() resources.Authorization {
 	return resources.Authorization{
-		GrantType:    "client_credentials",
+		GrantType:    grantType,
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Audience:     audience,

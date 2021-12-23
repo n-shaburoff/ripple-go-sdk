@@ -13,7 +13,7 @@ type CreateQuoteCollection struct {
 
 type CreateQuoteCollectionResponse struct {
 	QuoteCollectionID string `json:"quote_collection_id"`
-	Quotes            Quote  `json:"quotes"`
+	Quotes            []Quote  `json:"quotes"`
 }
 
 type Quote struct {

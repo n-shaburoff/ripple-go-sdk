@@ -25,15 +25,16 @@ func TestClient_CreateQuoteCollection(t *testing.T) {
 	ripple, err := NewClient(svc)
 	assert.NoError(t, err)
 
-	_, err = ripple.CreateQuoteCollection(resources.CreateQuoteCollection{
-		SendingAddress:             "test.irl.rfc",
-		ReceivingAddress:           "test.xrapid.rfc",
-		Amount:                     25,
-		QuoteType:                  "SENDER_AMOUNT",
+	resp, err := ripple.CreateQuoteCollection(resources.CreateQuoteCollection{
+		SendingAddress:             "sf@rn.us.ca.san_francisco",
+		ReceivingAddress:           "sf_gbp@rn.us.ca.san_francisco",
+		Amount:                     1,
 		Currency:                   "USD",
-		PaymentMethod:              "spei",
+		QuoteType:                  "SENDER_AMOUNT",
+		EnableQuotePerPayoutMethod: true,
 		DigitalAssetOrigination:    false,
-		EnableQuotePerPayoutMethod: false,
 	})
+
+	fmt.Println(resp)
 	assert.NoError(t, err)
 }
