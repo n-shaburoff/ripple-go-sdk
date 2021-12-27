@@ -5,13 +5,7 @@ import (
 	"fmt"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/pkg/errors"
-	"os"
 )
-
-var grantType = os.Getenv("GRANT_TYPE")
-var clientID = os.Getenv("CLIENT_ID")
-var clientSecret = os.Getenv("CLIENT_SECRET")
-var audience = os.Getenv("AUDIENCE")
 
 const (
 	authorizationPath         = "/oauth/token"
@@ -33,7 +27,7 @@ type client struct {
 }
 
 func NewClient(svc *servicer) (Client, error) {
-	err := svc.Authorize(authReqBody())
+	err := svc.Authorize(svc.creds)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to authorize")
 	}

@@ -12,8 +12,8 @@ type CreateQuoteCollection struct {
 }
 
 type CreateQuoteCollectionResponse struct {
-	QuoteCollectionID string `json:"quote_collection_id"`
-	Quotes            []Quote  `json:"quotes"`
+	QuoteCollectionID string  `json:"quote_collection_id"`
+	Quotes            []Quote `json:"quotes"`
 }
 
 type Quote struct {
@@ -55,4 +55,3 @@ type AcceptQuote struct {
 	InternalID       string                 `json:"internal_id"`
 	UserInfo         map[string]interface{} `json:"user_info"`
 }
-

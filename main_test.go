@@ -2,30 +2,25 @@ package ripple_go_sdk
 
 import (
 	"fmt"
-	"github.com/n-shaburoff/ripple-go-sdk/config"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/distributed_lab/kit/kv"
+	"os"
 	"testing"
 )
 
-func TestServicer_Authorize(t *testing.T) {
-	cfg := config.NewUrler(kv.MustFromEnv())
-	svc := NewServicer(cfg)
-
-	err := svc.Authorize(authReqBody())
-
-	fmt.Println(svc.accessToken)
-	assert.NoError(t, err)
-}
+var grantType = os.Getenv("GRANT_TYPE")
+var clientID = os.Getenv("CLIENT_ID")
+var clientSecret = os.Getenv("CLIENT_SECRET")
+var audience = os.Getenv("AUDIENCE")
+var authUrl = os.Getenv("AUTH_URL")
+var baseURL = os.Getenv("BASE_URL")
 
 func TestClient_CreateQuoteCollection(t *testing.T) {
-	cfg := config.NewUrler(kv.MustFromEnv())
-	svc := NewServicer(cfg)
-	ripple, err := NewClient(svc)
+	servicer := NewServicer(authUrl, baseURL, grantType, clientID, clientSecret, audience)
+	client, err := NewClient(servicer)
 	assert.NoError(t, err)
 
-	resp, err := ripple.CreateQuoteCollection(resources.CreateQuoteCollection{
+	resp, err := client.CreateQuoteCollection(resources.CreateQuoteCollection{
 		SendingAddress:             "sf@rn.us.ca.san_francisco",
 		ReceivingAddress:           "sf_gbp@rn.us.ca.san_francisco",
 		Amount:                     1,

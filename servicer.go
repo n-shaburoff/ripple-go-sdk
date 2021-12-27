@@ -3,7 +3,6 @@ package ripple_go_sdk
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/n-shaburoff/ripple-go-sdk/config"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/pkg/errors"
 	"io/ioutil"
@@ -29,13 +28,20 @@ type servicer struct {
 	tokenTimeDuration time.Duration
 	authUrl           string
 	baseUrl           string
+	creds             resources.Authorization
 }
 
-func NewServicer(cfg config.URL) *servicer {
+func NewServicer(authUrl, baseUrl, grantType, clientID, clientSecret, audience string) *servicer {
 	return &servicer{
-		authUrl: cfg.URL().AuthUrl,
-		baseUrl: cfg.URL().BaseUrl,
+		authUrl: authUrl,
+		baseUrl: baseUrl,
 		http:    http.DefaultClient,
+		creds: resources.Authorization{
+			GrantType:    grantType,
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			Audience:     audience,
+		},
 	}
 }
 
@@ -150,19 +156,10 @@ func (c *servicer) CheckAccessToken() error {
 	difference := nowTime.Sub(c.tokenExpires)
 
 	if difference > c.tokenTimeDuration {
-		err := c.Authorize(authReqBody())
+		err := c.Authorize(c.creds)
 		if err != nil {
 			return errors.Wrap(err, "failed to refresh access token")
 		}
 	}
 	return nil
-}
-
-func authReqBody() resources.Authorization {
-	return resources.Authorization{
-		GrantType:    grantType,
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Audience:     audience,
-	}
 }
