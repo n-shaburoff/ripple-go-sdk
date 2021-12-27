@@ -7,8 +7,8 @@ import (
 	"gitlab.com/distributed_lab/kit/kv"
 )
 
-type ODL interface {
-	ODL() ripplegosdk.Client
+type ODLer interface {
+	RippleODL() ripplegosdk.Client
 }
 
 type odler struct {
@@ -16,13 +16,13 @@ type odler struct {
 	once   comfig.Once
 }
 
-func NewODlClient(getter kv.Getter) ODL {
+func NewODlClient(getter kv.Getter) ODLer {
 	return &odler{
 		getter: getter,
 	}
 }
 
-func (c *odler) ODL() ripplegosdk.Client {
+func (c *odler) RippleODL() ripplegosdk.Client {
 	return c.once.Do(func() interface{} {
 
 		var cfg struct {
