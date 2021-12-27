@@ -8,7 +8,7 @@ import (
 )
 
 type ODL interface {
-	ODL() *ripplegosdk.Client
+	ODL() ripplegosdk.Client
 }
 
 type odler struct {
@@ -22,7 +22,7 @@ func NewODlClient(getter kv.Getter) ODL {
 	}
 }
 
-func (c *odler) ODL() *ripplegosdk.Client {
+func (c *odler) ODL() ripplegosdk.Client {
 	return c.once.Do(func() interface{} {
 
 		var cfg struct {
@@ -46,6 +46,6 @@ func (c *odler) ODL() *ripplegosdk.Client {
 			panic(err)
 		}
 
-		return &odlClient
-	}).(*ripplegosdk.Client)
+		return odlClient
+	}).(ripplegosdk.Client)
 }
