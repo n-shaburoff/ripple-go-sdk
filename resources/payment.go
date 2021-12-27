@@ -16,3 +16,5 @@ type PaymentContract struct {
 }
 
 type SettlePayment struct{}
+
+type LockPayment struct{}

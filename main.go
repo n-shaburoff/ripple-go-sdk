@@ -11,8 +11,10 @@ const (
 	authorizationPath         = "/oauth/token"
 	createQuoteCollectionPath = "/v4/quote_collections"
 	acceptQuotePath           = "/v4/payments/accept"
-	settlePaymentPath         = "/v4/payments/"
-	getPaymentByIDPath        = "/v4/payments/"
+	settlePaymentPath         = "/v4/payments/%s/settle"
+	getPaymentByIDPath        = "/v4/payments/%s"
+	getAcceptedQuotesPath     = "/v4/payments/?state=ACCEPTED"
+	lockPaymentPath           = "/v4/payments/%s/lock"
 )
 
 type Client interface {
@@ -20,6 +22,8 @@ type Client interface {
 	AcceptQuote(data resources.AcceptQuote) (*resources.Payment, error)
 	SettlePayment(paymentID string) (*resources.Payment, error)
 	GetPaymentByID(paymentID string) (*resources.Payment, error)
+	GetAcceptedQuotes() (*resources.Payment, error)
+	LockPayment(quoteId string, data resources.LockPayment) (*resources.Payment, error)
 }
 
 type client struct {
@@ -83,7 +87,7 @@ func (c *client) SettlePayment(paymentID string) (*resources.Payment, error) {
 	}
 
 	reqBody := resources.SettlePayment{}
-	reqPath := fmt.Sprintf("%s%s/settle", settlePaymentPath, paymentID)
+	reqPath := fmt.Sprintf(settlePaymentPath, paymentID)
 	response, err := c.Do.Post(reqBody, reqPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "error sending settle payment request")
@@ -103,10 +107,49 @@ func (c *client) GetPaymentByID(paymentID string) (*resources.Payment, error) {
 		return nil, errors.Wrap(err, "old access token")
 	}
 
-	reqPath := fmt.Sprintf("%s%s", getPaymentByIDPath, paymentID)
+	reqPath := fmt.Sprintf(getPaymentByIDPath, paymentID)
 	response, err := c.Do.Get(reqPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "error sending get payment by id request")
+	}
+
+	var body resources.Payment
+	err = json.Unmarshal(response, &body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling response")
+	}
+	return &body, nil
+}
+
+func (c *client) GetAcceptedQuotes() (*resources.Payment, error) {
+	err := c.Do.CheckAccessToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "old access token")
+	}
+
+	response, err := c.Do.Get(getAcceptedQuotesPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "error sending get accepted quotes request")
+	}
+
+	var body resources.Payment
+	err = json.Unmarshal(response, &body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling response")
+	}
+	return &body, nil
+}
+
+func (c *client) LockPayment(quoteID string, data resources.LockPayment) (*resources.Payment, error) {
+	err := c.Do.CheckAccessToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "old access token")
+	}
+
+	reqPath := fmt.Sprintf(lockPaymentPath, quoteID)
+	response, err := c.Do.Post(data, reqPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "error sending get accepted quotes request")
 	}
 
 	var body resources.Payment
