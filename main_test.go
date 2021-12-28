@@ -15,21 +15,20 @@ var audience = os.Getenv("AUDIENCE")
 var authUrl = os.Getenv("AUTH_URL")
 var baseURL = os.Getenv("BASE_URL")
 
-func TestClient_CreateQuoteCollection(t *testing.T) {
+func TestClient_GetQuoteCollection(t *testing.T) {
 	servicer := NewServicer(authUrl, baseURL, grantType, clientID, clientSecret, audience)
 	client, err := NewClient(servicer)
 	assert.NoError(t, err)
 
-	resp, err := client.CreateQuoteCollection(resources.CreateQuoteCollection{
-		SendingAddress:             "sf@rn.us.ca.san_francisco",
-		ReceivingAddress:           "sf_gbp@rn.us.ca.san_francisco",
-		Amount:                     1,
-		Currency:                   "USD",
-		QuoteType:                  "SENDER_AMOUNT",
-		EnableQuotePerPayoutMethod: true,
-		DigitalAssetOrigination:    false,
+	quoteCollection, err := client.CreateQuoteCollection(resources.CreateQuoteCollection{
+		SendingAddress:   "trans1_usd_everest@test.mlt.everest",
+		ReceivingAddress: "trans_php_everesttestpeer@test.cloud.everesttestpeer",
+		Amount:           1,
+		Currency:         "USD",
+		QuoteType:        "SENDER_AMOUNT",
+		PaymentMethod:    nil,
 	})
 
-	fmt.Println(resp)
+	fmt.Println(quoteCollection)
 	assert.NoError(t, err)
 }
