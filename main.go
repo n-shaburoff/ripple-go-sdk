@@ -16,6 +16,7 @@ const (
 	getAcceptedQuotesPath     = "/v4/payments/?state=ACCEPTED"
 	lockPaymentPath           = "/v4/payments/%s/lock"
 	completePaymentPath       = "/v4/payments/%s/complete"
+	initiateAccountLookupPath = "/v4/account_lookups/request"
 )
 
 type Client interface {
@@ -26,6 +27,7 @@ type Client interface {
 	GetAcceptedQuotes() (*resources.Payment, error)
 	LockPayment(quoteID string, data resources.LockPayment) (*resources.Payment, error)
 	CompletePayment(paymentID string, data resources.CompletePayment) (*resources.Payment, error)
+	InitiateAccountLookUp(data resources.AccountLookUp) (*resources.AccountLookUp, error)
 }
 
 type client struct {
@@ -175,6 +177,25 @@ func (c *client) CompletePayment(paymentID string, data resources.CompletePaymen
 	}
 
 	var body resources.Payment
+	err = json.Unmarshal(response, &body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling response")
+	}
+	return &body, nil
+}
+
+func (c *client) InitiateAccountLookUp(data resources.AccountLookUp) (*resources.AccountLookUp, error) {
+	err := c.Do.CheckAccessToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "old access token")
+	}
+
+	response, err := c.Do.Post(data, initiateAccountLookupPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "error sending initiate look up account request")
+	}
+
+	var body resources.AccountLookUp
 	err = json.Unmarshal(response, &body)
 	if err != nil {
 		return nil, errors.Wrap(err, "error unmarshalling response")
