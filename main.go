@@ -15,6 +15,7 @@ const (
 	getPaymentByIDPath        = "/v4/payments/%s"
 	getAcceptedQuotesPath     = "/v4/payments/?state=ACCEPTED"
 	lockPaymentPath           = "/v4/payments/%s/lock"
+	completePaymentPath       = "/v4/payments/%s/complete"
 )
 
 type Client interface {
@@ -23,7 +24,8 @@ type Client interface {
 	SettlePayment(paymentID string) (*resources.Payment, error)
 	GetPaymentByID(paymentID string) (*resources.Payment, error)
 	GetAcceptedQuotes() (*resources.Payment, error)
-	LockPayment(quoteId string, data resources.LockPayment) (*resources.Payment, error)
+	LockPayment(quoteID string, data resources.LockPayment) (*resources.Payment, error)
+	CompletePayment(paymentID string, data resources.CompletePayment) (*resources.Payment, error)
 }
 
 type client struct {
@@ -150,6 +152,26 @@ func (c *client) LockPayment(quoteID string, data resources.LockPayment) (*resou
 	response, err := c.Do.Post(data, reqPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "error sending get accepted quotes request")
+	}
+
+	var body resources.Payment
+	err = json.Unmarshal(response, &body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling response")
+	}
+	return &body, nil
+}
+
+func (c *client) CompletePayment(paymentID string, data resources.CompletePayment) (*resources.Payment, error) {
+	err := c.Do.CheckAccessToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "old access token")
+	}
+
+	reqPath := fmt.Sprintf(completePaymentPath, paymentID)
+	response, err := c.Do.Post(data, reqPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "error sending complete payment request")
 	}
 
 	var body resources.Payment
