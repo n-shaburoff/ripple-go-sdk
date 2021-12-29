@@ -3,13 +3,11 @@ package ripple_go_sdk
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 )
 
