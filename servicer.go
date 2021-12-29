@@ -79,9 +79,7 @@ func (c *servicer) Authorize(data resources.Authorization) error {
 	c.tokenExpires = time.Now()
 
 	// setting token time duration
-	dur := strconv.FormatInt(int64(body.ExpiresIn), 10)
-	durTime, _ := time.ParseDuration(fmt.Sprintf("%ss", dur))
-	c.tokenTimeDuration = durTime
+	c.tokenTimeDuration = time.Duration(body.ExpiresIn) * time.Second
 
 	// setting base url
 	c.url = base
