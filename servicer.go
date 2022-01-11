@@ -3,13 +3,11 @@ package ripple_go_sdk
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/n-shaburoff/ripple-go-sdk/resources"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -79,9 +77,7 @@ func (c *servicer) Authorize(data resources.Authorization) error {
 	c.tokenExpires = time.Now()
 
 	// setting token time duration
-	dur := strconv.FormatInt(int64(body.ExpiresIn), 10)
-	durTime, _ := time.ParseDuration(fmt.Sprintf("%ss", dur))
-	c.tokenTimeDuration = durTime
+	c.tokenTimeDuration = time.Duration(body.ExpiresIn) * time.Second
 
 	// setting base url
 	c.url = base
