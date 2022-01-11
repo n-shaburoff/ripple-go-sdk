@@ -3,7 +3,7 @@ package resources
 type CreateQuoteCollection struct {
 	SendingAddress             string  `json:"sending_address"`
 	ReceivingAddress           string  `json:"receiving_address"`
-	Amount                     int     `json:"amount"`
+	Amount                     float64     `json:"amount"`
 	QuoteType                  string  `json:"quote_type"`
 	Currency                   string  `json:"currency"`
 	PaymentMethod              *string `json:"payment_method"`
